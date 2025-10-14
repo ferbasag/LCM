@@ -188,6 +188,7 @@ MIT License - see LICENSE file for details
 
 ## Author
 
+@ferbasag
 Created for lightweight server monitoring and audit logging.
 
 ## Support
