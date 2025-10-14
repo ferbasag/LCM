@@ -75,11 +75,11 @@ LCM automatically filters sensitive data from logs with **5 essential patterns**
 
 | Pattern | Example | Logged As |
 |---------|---------|-----------|
-| MySQL passwords (quoted) | `mysql -p'Secret123'` | `mysql [FILTERED]` |
-| MySQL passwords (direct) | `mysql -pSecret123` | `mysql -p[FILTERED]` |
-| Password flags | `--password=secret` | `--password=[FILTERED]` |
-| URL credentials | `https://user:pass@host` | `https://[FILTERED]@host` |
-| Environment variables | `export API_KEY=xyz` | `export API_KEY=[FILTERED]` |
+| MySQL passwords (quoted) | `mysql -p'Secret123'` | `mysql -p\*\*\*FILTERED\*\*\*` |
+| MySQL passwords (direct) | `mysql -pSecret123` | `mysql -p\*\*\*FILTERED\*\*\*` |
+| Password flags | `--password=secret` | `--password=\*\*\*FILTERED\*\*\*` |
+| URL credentials | `https://user:pass@host` | `https://\*\*\*FILTERED\*\*\*@host` |
+| Environment variables | `export API_KEY=xyz` | `export API_KEY=\*\*\*FILTERED\*\*\*` |
 
 These filters cover **90% of common password scenarios** while keeping the tool lightweight.
 
