@@ -22,10 +22,10 @@ LCM automatically logs all bash commands executed by users with built-in securit
 
 ```bash
 # 1. Download the script
-sudo curl -o /opt/lcm.sh https://raw.githubusercontent.com/YOUR_USERNAME/lcm/main/lcm.sh
+sudo curl -o /opt/lcm.sh https://raw.githubusercontent.com/ferbasag/lcm/main/lcm.sh
 
 # OR clone the repository
-git clone https://github.com/YOUR_USERNAME/lcm.git
+git clone https://github.com/ferbasag/lcm.git
 sudo cp lcm/lcm.sh /opt/lcm.sh
 
 # 2. Make it executable
@@ -47,9 +47,9 @@ Log back in and you're ready!
 ```bash
 lcm                    # 📊 Dashboard - Last 50 commands
 lcm-all                # 📝 All commands (last 1000)
-lcm-user root          # 👤 Commands by specific user
+lcm-user <username>    # 👤 Commands by specific user
 lcm-today              # 📅 Today's commands
-lcm-search docker      # 🔍 Search for specific term
+lcm-search <term>      # 🔍 Search for specific term
 ```
 
 ### Example Output
