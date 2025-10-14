@@ -22,11 +22,11 @@ LCM automatically logs all bash commands executed by users with built-in securit
 
 ```bash
 # 1. Download the script
-sudo curl -o /opt/lcm.sh https://raw.githubusercontent.com/ferbasag/lcm/main/lcm.sh
+sudo curl -o /opt/lcm.sh https://raw.githubusercontent.com/ferbasag/LCM/main/lcm.sh
 
 # OR clone the repository
-git clone https://github.com/ferbasag/lcm.git
-sudo cp lcm/lcm.sh /opt/lcm.sh
+git clone https://github.com/ferbasag/LCM.git
+sudo cp LCM/lcm.sh /opt/lcm.sh
 
 # 2. Make it executable
 sudo chmod +x /opt/lcm.sh
