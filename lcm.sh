@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# LCM User-Installer (v3 - Robust Logging)
+# Installiert ein privates, leichtes Monitoring-Tool für den aktuellen BASH-Benutzer.
+#
 
 set -euo pipefail
 
@@ -10,37 +14,46 @@ echo "Installing Command Monitoring System (User-specific)..."
 
 # Create user-specific log directory
 mkdir -p "$LOG_DIR"
-chmod 700 "$LOG_DIR"
+chmod 700 "$LOG_DIR" # 700 = Nur Eigentümer darf rein
 
 # Create logging script
 cat << 'LOGGING_SCRIPT' > "$CONFIG_FILE"
 #!/bin/bash
 
+# Nur für interaktive Bash-Shells
 [ -n "$BASH_VERSION" ] || return
 case $- in *i*) ;; *) return ;; esac
 
-USER_LOG="$HOME/.lcm/logs/$(whoami)_commands.log"
+# Pfad zur Logdatei
+readonly USER_LOG="$HOME/.lcm/logs/$(whoami)_commands.log"
 
+# Log-Datei beim Start sicher erstellen
 if [[ ! -f "$USER_LOG" ]]; then
     mkdir -p "$HOME/.lcm/logs" 2>/dev/null
     : >"$USER_LOG" 2>/dev/null || true
-    chmod 600 "$USER_LOG" 2>/dev/null || true
+    chmod 600 "$USER_LOG" 2>/dev/null || true # 600 = Nur Eigentümer darf lesen/schreiben
 fi
 
-log_command() {
+_lcm_log_command() {
+    # 1. Zuerst den letzten Befehl sofort in die History-Datei auf Festplatte schreiben
+    history -a
+    
+    # 2. Den letzten Befehl robust aus der HISTFILE holen
     local last_cmd
-    last_cmd="$(history 1 | sed 's/^[ ]*[0-9]\+[ ]*//')"
+    last_cmd=$(tail -n 1 "$HISTFILE" | sed 's/^[ ]*[0-9]\+[ ]*//')
 
-    if [[ -n "$last_cmd" && "$last_cmd" != "log_command" ]]; then
+    # Nicht den Log-Befehl selbst protokollieren
+    if [[ -n "$last_cmd" && "$last_cmd" != "_lcm_log_command" ]]; then
         local safe_cmd="$last_cmd"
 
-        # Essential Security Filters (5 most common patterns)
-        safe_cmd=$(echo "$safe_cmd" | sed -E "s/-p'[^']+'/***FILTERED***/g")                                    # MySQL -p'pass'
-        safe_cmd=$(echo "$safe_cmd" | sed -E "s/-p[[:alnum:]@#$%^&*()_+=!-]+/-p***FILTERED***/g")              # MySQL -ppass
-        safe_cmd=$(echo "$safe_cmd" | sed -E "s/(--password[= ])[^ ]+/\1***FILTERED***/gi")                    # --password=
-        safe_cmd=$(echo "$safe_cmd" | sed -E "s|://[^:]+:[^@]+@|://***FILTERED***@|g")                         # URLs user:pass@
-        safe_cmd=$(echo "$safe_cmd" | sed -E "s/(export[[:space:]]+[A-Z_]*(PASSWORD|SECRET|TOKEN|KEY|API)[A-Z_]*=)[^ ]+/\1***FILTERED***/gi")  # ENV vars
+        # 3. Deine bewährten Security-Filter
+        safe_cmd=$(echo "$safe_cmd" | sed -E "s/-p'[^']+'/***FILTERED***/g")
+        safe_cmd=$(echo "$safe_cmd" | sed -E "s/-p[[:alnum:]@#$%^&*()_+=!-]+/-p***FILTERED***/g")
+        safe_cmd=$(echo "$safe_cmd" | sed -E "s/(--password[= ])[^ ]+/\1***FILTERED***/gi")
+        safe_cmd=$(echo "$safe_cmd" | sed -E "s|://[^:]+:[^@]+@|://***FILTERED***@|g")
+        safe_cmd=$(echo "$safe_cmd" | sed -E "s/(export[[:space:]]+[A-Z_]*(PASSWORD|SECRET|TOKEN|KEY|API)[A-Z_]*=)[^ ]+/\1***FILTERED***/gi")
 
+        # 4. In die private Logdatei schreiben
         printf "%s | %s | %s | %s\n" \
             "$(date '+%Y-%m-%d %H:%M:%S')" \
             "$(whoami)" \
@@ -49,17 +62,17 @@ log_command() {
     fi
 }
 
-# Simple PROMPT_COMMAND setup
+# 5. Sicher zum PROMPT_COMMAND hinzufügen
 if [[ -z "$PROMPT_COMMAND" ]]; then
-    PROMPT_COMMAND="history -a; log_command"
+    PROMPT_COMMAND="_lcm_log_command"
 else
     case ";$PROMPT_COMMAND;" in
-        *";log_command;"*) : ;;
-        *) PROMPT_COMMAND="${PROMPT_COMMAND}; log_command" ;;
+        *";_lcm_log_command;"*) : ;;
+        *) PROMPT_COMMAND="${PROMPT_COMMAND}; _lcm_log_command" ;;
     esac
 fi
-
 export PROMPT_COMMAND
+
 LOGGING_SCRIPT
 
 chmod +x "$CONFIG_FILE"
@@ -96,7 +109,6 @@ lcm() {
         echo "No logs available. Restart terminal."
     fi
     echo
-
     echo "Commands: lcm-all, lcm-today, lcm-search <term>"
 }
 
